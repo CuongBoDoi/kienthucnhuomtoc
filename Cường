@@ -1,0 +1,962 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Khám Phá Thế Giới Nhuộm Tóc</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Visualization & Content Choices:
+        - Report Info: Lịch sử nhuộm tóc (1.1) -> Goal: Inform -> Presentation: Text block in 'Tổng Quan' -> Interaction: Read -> Justification: Foundational context.
+        - Report Info: Cấu trúc tóc (1.2) -> Goal: Inform -> Presentation: Text block with key terms highlighted in 'Tổng Quan' -> Interaction: Read -> Justification: Essential for understanding dyeing.
+        - Report Info: Cơ chế hóa học (2.1) -> Goal: Explain -> Presentation: Detailed text in 'Hóa Học', possibly with sub-headings for temporary, semi/demi, permanent -> Interaction: Read -> Justification: Core scientific understanding.
+        - Report Info: Hydrogen Peroxide (2.2, Table 1) -> Goal: Compare/Inform -> Viz: Chart.js grouped bar chart in 'So Sánh' (and text in 'Hóa Học') -> Interaction: View chart, hover for tooltips. Table also rendered. -> Justification: Visual comparison of concentrations and effects. Library: Chart.js.
+        - Report Info: Amoniac (2.3) -> Goal: Explain -> Presentation: Text in 'Hóa Học' -> Interaction: Read -> Justification: Key ingredient explanation.
+        - Report Info: Hạt màu (2.4) -> Goal: Explain -> Presentation: Text in 'Hóa Học' -> Interaction: Read -> Justification: Core component explanation.
+        - Report Info: Phân Loại Thuốc Nhuộm (Part III, Table 2) -> Goal: Inform/Compare -> Presentation: Interactive cards for each type in 'Phân Loại'. Table 2 in 'So Sánh'. -> Interaction: Click cards for details. View table. -> Justification: Easy exploration of dye types.
+        - Report Info: Chuẩn Bị (Part IV) -> Goal: Instruct -> Presentation: Step-by-step text sections in 'Chuẩn Bị' (Assessment, Color Choice, Patch Test, Tools) -> Interaction: Read, follow steps -> Justification: Practical guidance.
+        - Report Info: Kỹ Thuật Nhuộm (Part V, Table 3) -> Goal: Inform/Compare -> Presentation: Interactive cards for each technique in 'Kỹ Thuật'. Table 3 in 'So Sánh'. -> Interaction: Click cards for details. View table. -> Justification: Showcase different methods.
+        - CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif; /* Using Inter as a default Tailwind-like font */
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 700px; /* Adjusted max-width for better display */
+            margin-left: auto;
+            margin-right: auto;
+            height: 400px; /* Base height */
+            max-height: 500px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 500px; /* Taller on medium screens and up */
+            }
+        }
+        .nav-button {
+            padding: 0.5rem 1rem;
+            border-radius: 0.375rem;
+            transition: background-color 0.3s ease, color 0.3s ease;
+            cursor: pointer;
+        }
+        .nav-button.active {
+            background-color: #0D9488; /* Tailwind teal-600 */
+            color: white;
+        }
+        .nav-button:not(.active):hover {
+            background-color: #F0F9FF; /* Tailwind sky-50 */
+            color: #14532D; /* Tailwind green-900 */
+        }
+        .card {
+            background-color: #ffffff; /* White cards */
+            border: 1px solid #E5E7EB; /* Tailwind gray-200 */
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); /* Tailwind shadow-lg */
+        }
+        /* Custom scrollbar for better aesthetics */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #0D9488; /* Tailwind teal-600 */
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #0F766E; /* Tailwind teal-700 */
+        }
+        .table-responsive {
+            overflow-x: auto;
+        }
+        th, td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid #E5E7EB; /* gray-200 */
+        }
+        th {
+            background-color: #F3F4F6; /* gray-100 */
+            font-weight: 600; /* semibold */
+        }
+    </style>
+</head>
+<body class="bg-stone-100 text-stone-800">
+    <header class="bg-teal-700 text-white p-6 shadow-lg sticky top-0 z-50">
+        <div class="container mx-auto flex flex-col sm:flex-row justify-between items-center">
+            <h1 class="text-3xl font-bold mb-4 sm:mb-0">Khám Phá Nghệ Thuật Nhuộm Tóc</h1>
+            <nav id="mainNav" class="flex flex-wrap justify-center space-x-2 sm:space-x-4">
+                <button data-section="tongQuan" class="nav-button active">Tổng Quan</button>
+                <button data-section="hoaHoc" class="nav-button">Hóa Học</button>
+                <button data-section="phanLoai" class="nav-button">Phân Loại</button>
+                <button data-section="chuanBi" class="nav-button">Chuẩn Bị</button>
+                <button data-section="kyThuat" class="nav-button">Kỹ Thuật</button>
+                <button data-section="soSanh" class="nav-button">So Sánh & Dữ Liệu</button>
+            </nav>
+        </div>
+    </header>
+
+    <main id="appContent" class="container mx-auto p-4 sm:p-8">
+        
+    </main>
+
+    <footer class="bg-stone-800 text-stone-300 text-center p-6 mt-12">
+        <p>&copy; 2025 KIẾN THỨC NHUỘM TÓC - BY Col James</p>
+    </footer>
+
+    <script>
+        const appData = {
+            tongQuan: {
+                title: "Phần I: Giới Thiệu Chung Về Nhuộm Tóc",
+                intro: "Phần này cung cấp cái nhìn tổng quan về nghệ thuật nhuộm tóc, từ định nghĩa, lịch sử phát triển hàng thiên niên kỷ đến tầm quan trọng của việc hiểu rõ cấu trúc sợi tóc trước khi thực hiện bất kỳ thay đổi màu sắc nào. Bạn sẽ khám phá hành trình của việc nhuộm tóc từ các phương pháp tự nhiên cổ xưa đến các công nghệ tổng hợp hiện đại, cũng như tìm hiểu về melanin - yếu tố quyết định màu tóc tự nhiên.",
+                sections: [
+                    {
+                        id: "lichSu",
+                        title: "1.1. Nhuộm tóc là gì? Lịch sử phát triển của nghệ thuật nhuộm tóc.",
+                        content: `
+                            <p class="mb-4">Nhuộm tóc là một quá trình phức tạp, sử dụng các hợp chất hóa học hoặc các chế phẩm có nguồn gốc tự nhiên nhằm mục đích thay đổi màu sắc nguyên thủy của sợi tóc. Quá trình này không chỉ giới hạn ở việc đáp ứng nhu cầu thẩm mỹ, thời trang, hay thể hiện cá tính, mà còn bao gồm cả mục đích thực tiễn như che phủ đi những sợi tóc bạc do quá trình lão hóa tự nhiên.</p>
+                            <p class="mb-4">Lịch sử của nghệ thuật nhuộm tóc kéo dài hàng thiên niên kỷ. Từ Ai Cập cổ đại (khoảng 1500 TCN) sử dụng henna, đến Hy Lạp và La Mã cổ đại khai thác chiết xuất thực vật. Thế kỷ 19 đánh dấu bước ngoặt với thuốc nhuộm tổng hợp: Mauveine (1863) và para-phenylenediamine (PPD). Năm 1907, Eugène Schueller (L'Oréal) thương mại hóa thuốc nhuộm hóa học đầu tiên.</p>
+                            <p class="mb-4">Các thập kỷ tiếp theo chứng kiến sự bùng nổ: "tóc vàng bạch kim" (1930s), thuốc nhuộm tại nhà Miss Clairol (1950s). Đến những năm 1970, gần 40% phụ nữ Mỹ nhuộm tóc. Ngày nay, con số này là khoảng 70% (2015), với kỹ thuật và màu sắc vô cùng đa dạng.</p>
+                            <p class="mb-4">Sự phát triển này phản ánh thay đổi quan niệm về cái đẹp và sự "dân chủ hóa" trong làm đẹp. Đồng thời, những lo ngại về an toàn đã thúc đẩy nghiên cứu các sản phẩm "thiên nhiên hơn".</p>
+                            <h4 class="text-lg font-semibold text-teal-700 mt-4 mb-2">Melanin và Màu Tóc Tự Nhiên:</h4>
+                            <p>Màu tóc tự nhiên được quy định bởi các hạt sắc tố melanin, sản sinh từ tế bào melanocytes. Có hai loại chính: eumelanin (nâu/đen) và pheomelanin (vàng/đỏ). Melanin còn bảo vệ tóc khỏi tia UV.</p>
+                        `
+                    },
+                    {
+                        id: "cauTrucToc",
+                        title: "1.2. Cấu trúc tóc và tầm quan trọng của việc hiểu rõ mái tóc trước khi nhuộm.",
+                        content: `
+                            <p class="mb-4">Sợi tóc gồm ba lớp chính: lớp biểu bì (cuticle) ngoài cùng bảo vệ, lớp vỏ (cortex) chứa melanin quyết định màu, và lớp tủy (medulla) trong cùng (không phải tóc nào cũng có).</p>
+                            <p class="mb-4">Biểu bì khỏe mạnh giúp tóc bóng mượt. Quá trình nhuộm vĩnh viễn thường mở lớp biểu bì để màu nhân tạo vào lớp vỏ. Mức độ màu (Color Level) là yếu tố quan trọng cần phân tích trước khi nhuộm.</p>
+                            <p class="mb-4">Kết cấu sợi tóc (to, vừa, nhỏ) cũng ảnh hưởng: tóc to cần nhiều kem nhuộm hơn, oxy nồng độ cao hơn và thời gian lâu hơn.</p>
+                            <p class="mb-4">Nhuộm vĩnh viễn thay đổi cấu trúc tóc, đưa màu nhân tạo vào và có thể loại bỏ màu tự nhiên. Amoniac thường dùng để mở biểu bì, điều này làm suy yếu tóc ở mức độ nào đó. Vì vậy, hiểu rõ đặc tính tóc (độ xốp, kết cấu, lịch sử hóa chất) là cực kỳ quan trọng để chọn sản phẩm và kỹ thuật phù hợp, hạn chế hư tổn.</p>
+                        `
+                    }
+                ]
+            },
+            hoaHoc: {
+                title: "Phần II: Cơ Chế Hóa Học và Các Thành Phần Chính Trong Thuốc Nhuộm",
+                intro: "Phần này đi sâu vào khía cạnh khoa học của việc nhuộm tóc. Bạn sẽ tìm hiểu về các cơ chế hóa học phức tạp diễn ra trong quá trình nhuộm, từ cách các loại thuốc nhuộm khác nhau tương tác với sợi tóc đến vai trò cụ thể của các thành phần chủ chốt như Hydrogen Peroxide (oxy trợ nhuộm), Amoniac (và các chất kiềm thay thế), cũng như các hạt màu tạo nên sự đa dạng về màu sắc.",
+                sections: [
+                    {
+                        id: "coCheHoaHoc",
+                        title: "2.1. Cơ chế hóa học của quá trình nhuộm tóc.",
+                        content: `
+                            <p class="mb-3">Quá trình nhuộm tóc là tập hợp các phản ứng hóa học, thay đổi tùy loại thuốc nhuộm:</p>
+                            <ul class="list-disc list-inside space-y-2 mb-4">
+                                <li><strong>Nhuộm tạm thời:</strong> Phân tử màu lớn bám trên bề mặt tóc, dễ rửa trôi.</li>
+                                <li><strong>Nhuộm bán vĩnh viễn (Semi-permanent) và lưng chừng (Demi-permanent):</strong>
+                                    <ul class="list-disc list-inside ml-6 space-y-1">
+                                        <li><em>Bán vĩnh viễn:</em> Phân tử màu nhỏ hơn, thấm vào phần ngoài lớp vỏ, không cần hoặc ít oxy hóa.</li>
+                                        <li><em>Lưng chừng (Demi-permanent):</em> Hạt màu thấm vào vỏ, cần ít oxy hóa (1.5%-3%). Không thay đổi cấu trúc protein tóc nhiều.</li>
+                                    </ul>
+                                </li>
+                                <li><strong>Nhuộm vĩnh viễn (Permanent/Oxidative Dyeing):</strong> Phức tạp nhất.
+                                    <ol class="list-decimal list-inside ml-6 space-y-1 mt-2">
+                                        <li><strong>Mở lớp biểu bì:</strong> Chất kiềm (amoniac/MEA) làm tóc phồng, biểu bì mở (pH 9-10.5).</li>
+                                        <li><strong>Tẩy màu tự nhiên:</strong> Hydrogen peroxide ($H_2O_2$) làm nhạt melanin.</li>
+                                        <li><strong>Lắng đọng màu nhân tạo:</strong> Tiền chất màu (dye precursors) và chất tạo cặp (couplers) nhỏ, thẩm thấu vào vỏ.</li>
+                                        <li><strong>Phản ứng oxy hóa và hình thành màu:</strong> Bên trong vỏ, $H_2O_2$ oxy hóa tiền chất, tạo phân tử màu lớn bị kẹt lại, tạo màu bền.</li>
+                                    </ol>
+                                    <p class="mt-2">Quá trình tẩy màu tự nhiên và lắng đọng màu nhân tạo có thể diễn ra đồng thời.</p>
+                                </li>
+                            </ul>
+                            <p>Nhuộm vĩnh viễn đòi hỏi cân bằng chính xác giữa làm sáng và đưa màu vào. Sai sót có thể dẫn đến màu không đúng hoặc hư tổn tóc. $H_2O_2$ vừa làm sáng melanin, vừa xúc tác tạo màu nhân tạo.</p>
+                        `
+                    },
+                    {
+                        id: "hydrogenPeroxide",
+                        title: "2.2. Hydrogen Peroxide (Oxy trợ nhuộm): Vai trò và các nồng độ.",
+                        content: `
+                            <p class="mb-4">Hydrogen Peroxide ($H_2O_2$), hay "oxy trợ nhuộm", là chất oxy hóa then chốt.</p>
+                            <h4 class="text-lg font-semibold text-teal-700 mt-4 mb-2">Vai trò:</h4>
+                            <ul class="list-disc list-inside space-y-2 mb-4">
+                                <li>Làm nhạt sắc tố melanin tự nhiên.</li>
+                                <li>Mở biểu bì tóc (do thành phần nước).</li>
+                                <li>Kích hoạt và phát triển màu nhuộm (phản ứng với tiền chất màu).</li>
+                                <li>Loại bỏ màu tóc cũ.</li>
+                                <li>Làm mềm sợi tóc.</li>
+                            </ul>
+                            <p class="mb-4">Oxy trợ nhuộm có dạng lỏng hoặc kem. Nồng độ tính bằng Volume (Vol) hoặc % (10 Vol ≈ 3%, 20 Vol ≈ 6%, 30 Vol ≈ 9%, 40 Vol ≈ 12%).</p>
+                            <p class="mb-4">Thời gian hoạt động hiệu quả: 30-50 phút. Công thức tham khảo thời gian xả: Số Vol + 10 phút vào màu + 5 phút dưỡng.</p>
+                            <p>Nồng độ oxy cao nâng sáng mạnh nhưng màu kém bền, dễ hư tổn. Nồng độ thấp nhẹ nhàng hơn, giữ màu tốt hơn nhưng hạn chế nâng sáng. Lựa chọn đúng nồng độ là kỹ năng quan trọng của thợ tóc.</p>
+                        `
+                    },
+                    {
+                        id: "amoniac",
+                        title: "2.3. Amoniac và các chất kiềm khác: Chức năng và giải pháp thay thế.",
+                        content: `
+                            <p class="mb-4">Amoniac ($NH_3$) hoặc các chất kiềm thay thế (như monoethanolamine - MEA) tạo môi trường pH cao (thường pH 10) trong thuốc nhuộm vĩnh viễn. Điều này làm sợi tóc phồng lên, mở lớp biểu bì, cho phép hóa chất khác thâm nhập vào lớp vỏ.</p>
+                            <p class="mb-4">Amoniac còn hỗ trợ phân tách $H_2O_2$ thành oxy nguyên tử, cần cho quá trình oxy hóa tạo màu.</p>
+                            <p class="mb-4">Nhược điểm của amoniac: mùi hắc, gây kích ứng đường hô hấp và da đầu. Do đó, có các sản phẩm "không chứa amoniac" (ammonia-free) sử dụng MEA, ít bay hơi và mùi nhẹ hơn.</p>
+                            <p>Dù có nhược điểm, vai trò tạo môi trường kiềm để mở biểu bì là thiết yếu cho thuốc nhuộm vĩnh viễn. Sản phẩm "không amoniac" vẫn chứa chất kiềm khác. Người tiêu dùng cần hiểu rõ thành phần thay vì chỉ dựa vào quảng cáo.</p>
+                        `
+                    },
+                    {
+                        id: "hatMau",
+                        title: "2.4. Hạt màu và các thành phần tạo màu.",
+                        content: `
+                            <p class="mb-4">Thành phần tạo màu chính trong thuốc nhuộm vĩnh viễn là các tiền chất màu (dye precursors/intermediates) và chất tạo cặp (couplers). Ban đầu, chúng là phân tử hữu cơ nhỏ, không màu hoặc màu nhạt, dễ thẩm thấu vào vỏ tóc.</p>
+                            <p class="mb-4">Ví dụ tiền chất: paraphenylenediamine (PPD), para-toluenediamine (PTD). Chất tạo cặp: resorcinol, m-aminophenol.</p>
+                            <p class="mb-4">Bên trong vỏ tóc, dưới tác động của $H_2O_2$ (và amoniac), các tiền chất này phản ứng với nhau và với chất tạo cặp, hình thành phân tử màu lớn, bị "mắc kẹt" lại, quyết định màu cuối cùng.</p>
+                            <p class="mb-4">Sự đa dạng màu sắc đạt được qua việc kết hợp các loại tiền chất và chất tạo cặp với tỷ lệ khác nhau. Màu tóc tự nhiên cũng ảnh hưởng đến kết quả cuối cùng.</p>
+                            <p>PPD hiệu quả tạo màu bền, đẹp (đặc biệt màu tối, phủ bạc) nhưng là nguyên nhân phổ biến gây dị ứng da. Đây là thách thức cho nhà sản xuất trong việc tìm chất thay thế an toàn hơn.</p>
+                            <p>Màu sắc cuối cùng phụ thuộc vào nhiều yếu tố: công thức thuốc, màu nền tóc, tình trạng tóc, kỹ thuật nhuộm.</p>
+                        `
+                    }
+                ]
+            },
+            phanLoai: {
+                title: "Phần III: Phân Loại Thuốc Nhuộm Tóc",
+                intro: "Thị trường thuốc nhuộm tóc rất đa dạng. Phần này sẽ giúp bạn phân biệt các loại thuốc nhuộm chính dựa trên cơ chế hoạt động, độ bền màu và thành phần hóa học. Từ thuốc nhuộm tạm thời cho những thay đổi ngắn hạn, đến các loại bán vĩnh viễn, lưng chừng, và thuốc nhuộm vĩnh viễn cho kết quả lâu dài, cũng như các lựa chọn từ thảo dược và những lưu ý về thuốc nhuộm kim loại.",
+                cards: [
+                    {
+                        id: "tamThoi",
+                        name: "3.1. Thuốc nhuộm tạm thời (Temporary)",
+                        details: `
+                            <p class="mb-2"><strong>Đặc điểm:</strong> Hạt màu lớn, bám bề mặt biểu bì, không cần oxy hóa, không đổi cấu trúc tóc.</p>
+                            <p class="mb-2"><strong>Độ bền màu:</strong> 1-3 lần gội.</p>
+                            <p class="mb-2"><strong>Công dụng:</strong> Tạo điểm nhấn, thử màu ngắn hạn, không làm sáng tóc tự nhiên.</p>
+                            <p class="mb-2"><strong>Dạng phổ biến:</strong> Phấn nhuộm (hair chalk), gel, sáp (wax), xịt. Cũng có dạng nước xả (color rinses), dầu gội tạo highlight, bút chì màu, mascara cho tóc.</p>
+                            <p class="mb-2"><strong>An toàn:</strong> Ít yêu cầu patch test, nhưng một số dạng (phấn, gel) có thể gây kích ứng da ở người nhạy cảm.</p>
+                            <p>Ưu điểm lớn là linh hoạt, ít hư tổn. Tuy nhiên, vẫn cần lưu ý thành phần có thể gây kích ứng.</p>
+                        `
+                    },
+                    {
+                        id: "banVinhVien",
+                        name: "3.2. Thuốc nhuộm bán vĩnh viễn (Semi-permanent) và lưng chừng (Demi-permanent)",
+                        details: `
+                            <h5 class="text-md font-semibold text-teal-600 mb-1">Thuốc nhuộm lưng chừng (Demi-permanent / Hấp màu):</h5>
+                            <p class="mb-2"><strong>Đặc điểm:</strong> Hạt màu nhỏ hơn tạm thời, thấm vào vỏ tóc. Không thay đổi cấu trúc protein nhiều. Cần ít oxy hóa (1.5%-3% $H_2O_2$), hoặc không cần nếu tóc đã tẩy/xốp.</p>
+                            <p class="mb-2"><strong>Độ bền màu:</strong> 3-4 tuần / 10-15 lần gội.</p>
+                            <p class="mb-2"><strong>Công dụng:</strong> Che phủ tóc bạc đầu tiên (khoảng 25%), làm đều màu, tăng bóng, nhuộm màu lên tóc đã tẩy.</p>
+                            
+                            <h5 class="text-md font-semibold text-teal-600 mt-3 mb-1">Thuốc nhuộm bán vĩnh viễn (Semi-permanent):</h5>
+                            <p class="mb-2"><strong>Đặc điểm:</strong> Hạt màu cũng nhỏ, thấm sâu hơn demi. Nhiều loại không cần oxy hóa hoặc rất thấp. Ví dụ: Lunar Tides.</p>
+                            <p class="mb-2"><strong>Ưu điểm:</strong> Ít hư tổn. Một số màu lên được trên tóc không cần tẩy (màu tối/ánh sắc mạnh).</p>
+                            <p class="mb-2"><strong>Nhược điểm:</strong> Màu phai dần. Nguy cơ dị ứng nếu sản phẩm kém chất lượng.</p>
+                            <p class="mb-2"><strong>Độ bền màu (dầu gội nhuộm):</strong> Khoảng 8 tuần.</p>
+                            <p class="mb-2"><strong>Dầu gội nhuộm tóc:</strong> Dạng phổ biến, tiện lợi, tiết kiệm, lên màu từ từ, tự nhiên, hạn chế xơ rối.</p>
+                            <p>Cả hai loại là lựa chọn trung gian, "nhẹ nhàng" hơn với tóc. Dầu gội nhuộm phản ánh xu hướng tiện lợi, tự làm tại nhà.</p>
+                        `
+                    },
+                    {
+                        id: "vinhVien",
+                        name: "3.3. Thuốc nhuộm vĩnh viễn (Permanent)",
+                        details: `
+                            <p class="mb-2">Còn gọi là thuốc nhuộm oxy hóa, thay đổi màu mạnh mẽ và lâu dài nhất.</p>
+                            <p class="mb-2"><strong>Đặc điểm:</strong> Tiền chất màu siêu nhỏ, thấm sâu vào vỏ, oxy hóa tạo phân tử màu lớn bị "khóa" lại. Luôn cần trộn với chất oxy hóa ($H_2O_2$).</p>
+                            <p class="mb-2"><strong>Cơ chế:</strong> Vừa loại bỏ/làm nhạt màu tự nhiên, vừa đưa màu nhân tạo vào. Môi trường kiềm mạnh (pH 9-10.5, do amoniac) mở biểu bì.</p>
+                            <p class="mb-2"><strong>Công dụng:</strong> Thay đổi hoàn toàn màu tự nhiên, đạt màu sáng, phủ bạc hiệu quả, bền màu.</p>
+                            <p class="mb-2"><strong>Phân loại chi tiết hơn (theo [9]):</strong>
+                                <ul class="list-disc list-inside ml-4">
+                                    <li>Thuốc nhuộm oxy hóa (Aniline derivative tints): Phổ biến nhất, cần patch test do chứa dẫn xuất aniline (PPD).</li>
+                                    <li>Thuốc nhuộm thảo mộc (Vegetable Tints)</li>
+                                    <li>Thuốc nhuộm kim loại (Metallic, Mineral Dyes)</li>
+                                    <li>Thuốc nhuộm hỗn hợp (Compound Dyes)</li>
+                                </ul>
+                            </p>
+                            <p>Hiệu quả ấn tượng nhưng rủi ro cao nhất (hư tổn, dị ứng). Cần kiến thức chuyên môn và kỹ thuật chính xác, thường thực hiện tại salon.</p>
+                        `
+                    },
+                    {
+                        id: "thaoDuoc",
+                        name: "3.4. Thuốc nhuộm thảo dược (Henna, Chàm - Indigo, và các loại khác)",
+                        details: `
+                            <p class="mb-2">Nguồn gốc tự nhiên từ hoa, lá, vỏ, rễ cây. Phổ biến nhất: Henna và Chàm (Indigo).</p>
+                            <h5 class="text-md font-semibold text-teal-600 mb-1">Henna (Lá móng - <em>Lawsonia inermis</em>):</h5>
+                            <p class="mb-2">Bột từ lá khô, tạo màu đỏ cam đến nâu đỏ. Phân tử lawsone liên kết keratin, bọc ngoài sợi tóc, tăng độ dày, bóng. Có thể cản trở hóa chất khác sau này. Thời gian ủ lâu (45 phút - vài giờ). Bền màu 1.5-2 tháng. Khó tạo màu sáng/lạnh.</p>
+                            
+                            <h5 class="text-md font-semibold text-teal-600 mt-3 mb-1">Chàm (Indigo - <em>Indigofera Tinctoria</em>):</h5>
+                            <p class="mb-2">Bột từ lá, tạo màu xanh đen. Kết hợp Henna tạo dải màu nâu đến đen (Henna (đỏ cam) + Indigo (xanh đen) = đen). Hỗ trợ trị bạc sớm, kích thích mọc tóc, giảm gàu. Hiếm khi dị ứng (nếu nguyên chất). Khó bảo quản.</p>
+
+                            <h5 class="text-md font-semibold text-teal-600 mt-3 mb-1">Ưu điểm chung:</h5>
+                            <p class="mb-2">Lành tính hơn, ít hóa chất mạnh. Bảo vệ, cấp ẩm, làm mềm tóc. Giữ màu tối tốt. Ít xơ rối. Mùi dễ chịu. Dễ tự nhuộm tại nhà.</p>
+
+                            <h5 class="text-md font-semibold text-teal-600 mt-3 mb-1">Nhược điểm chung:</h5>
+                            <p class="mb-2">Hạn chế màu sáng/thời trang/lạnh. Màu đen thảo dược khó đổi sang màu sáng. Bột cần kinh nghiệm pha chế. Độ bền thay đổi.</p>
+                            <p>"Tự nhiên" không đồng nghĩa không dị ứng. Hiệu quả màu sắc, độ bền thường không bằng hóa học. Một số sản phẩm "thảo dược" có thể chứa hóa chất khác.</p>
+                        `
+                    },
+                    {
+                        id: "kimLoai",
+                        name: "3.5. Thuốc nhuộm kim loại và thuốc nhuộm hỗn hợp",
+                        details: `
+                            <p class="mb-2">Không còn ưa chuộng, không khuyến khích chuyên nghiệp do hạn chế và rủi ro.</p>
+                            <h5 class="text-md font-semibold text-teal-600 mb-1">Thuốc nhuộm kim loại (Metallic Dyes, Mineral Dyes, Progressive Colors, Color Restorers):</h5>
+                            <p class="mb-2"><strong>Thành phần:</strong> Hợp chất kim loại nặng (chì, bạc, đồng).</p>
+                            <p class="mb-2"><strong>Cơ chế:</strong> Ion kim loại phản ứng lưu huỳnh trong keratin, tạo lớp phủ màu trên bề mặt, màu phát triển từ từ (nâu, xám đen).</p>
+                            <p class="mb-2"><strong>Nhược điểm:</strong> Màu không tự nhiên, xỉn, có thể đổi màu không mong muốn. Gây tóc cứng, giòn, khô, dễ gãy. Cản trở dịch vụ hóa chất khác. Không dùng chuyên nghiệp. Lo ngại tích tụ kim loại nặng.</p>
+
+                            <h5 class="text-md font-semibold text-teal-600 mt-3 mb-1">Thuốc nhuộm hỗn hợp (Compound Dyes):</h5>
+                            <p class="mb-2"><strong>Thành phần:</strong> Kết hợp thảo dược (Henna) với thuốc nhuộm kim loại.</p>
+                            <p class="mb-2"><strong>Mục đích:</strong> Tạo màu đa dạng, lạ mắt hơn.</p>
+                            <p class="mb-2"><strong>Khuyến cáo:</strong> Không nên sử dụng do tác động khó kiểm soát, nguy cơ hại tóc. Nhiều người vẫn tự mua dùng tại nhà.</p>
+                            <p>Cả hai loại là công nghệ lỗi thời, không được khuyến khích. Chuyên gia ưu tiên sản phẩm thành phần rõ ràng, dự đoán kết quả chính xác, ít rủi ro.</p>
+                        `
+                    }
+                ]
+            },
+            chuanBi: {
+                title: "Phần IV: Chuẩn Bị Kỹ Lưỡng Trước Khi Nhuộm Tóc",
+                intro: "Sự chuẩn bị cẩn thận là yếu tố then chốt quyết định đến kết quả màu nhuộm và sức khỏe của mái tóc. Phần này sẽ hướng dẫn bạn các bước không thể bỏ qua trước khi bắt đầu quá trình nhuộm, bao gồm việc đánh giá chính xác tình trạng tóc, lựa chọn màu nhuộm hài hòa với tông da và màu tóc tự nhiên, thực hiện kiểm tra dị ứng để đảm bảo an toàn, và chuẩn bị đầy đủ các vật dụng cần thiết cũng như không gian phù hợp.",
+                sections: [
+                    {
+                        id: "danhGiaToc",
+                        title: "4.1. Đánh giá tình trạng tóc.",
+                        content: `
+                            <p class="mb-3">Đây là bước nền tảng. Đánh giá chính xác giúp chọn sản phẩm, kỹ thuật phù hợp, giảm hư tổn.</p>
+                            <ul class="list-disc list-inside space-y-2 mb-4">
+                                <li><strong>Đánh giá bằng mắt thường:</strong> Quan sát độ bóng, độ dày, tình trạng khô xơ, chẻ ngọn.</li>
+                                <li><strong>Cảm nhận bằng tay (xúc giác và độ đàn hồi):</strong>
+                                    <ul class="list-disc list-inside ml-6 space-y-1">
+                                        <li><em>Xúc giác:</em> Vuốt tóc cảm nhận độ mềm mại/nhám, sần sùi/nhũn, bở.</li>
+                                        <li><em>Độ đàn hồi:</em> Kéo nhẹ sợi tóc xem độ co giãn. Tóc yếu dễ đứt.</li>
+                                    </ul>
+                                </li>
+                                <li><strong>Hỏi về lịch sử xử lý hóa chất:</strong> Tóc từng uốn, duỗi, nhuộm nhiều thường yếu hơn.</li>
+                                <li><strong>Ảnh hưởng của tình trạng tóc:</strong> Tóc khô, hư tổn, xốp cao hấp thụ thuốc nhanh, mạnh hơn, có thể lên màu không đều, sậm hơn. Nên dưỡng ẩm tóc ít nhất 3 ngày trước nhuộm. Nếu tóc quá yếu, cần phục hồi trước.</li>
+                            </ul>
+                            <p>Bỏ qua bước này có thể dẫn đến màu không đẹp, tóc hư tổn nghiêm trọng. Một mái tóc khỏe là tiền đề cho kết quả nhuộm thành công.</p>
+                        `
+                    },
+                    {
+                        id: "chonMau",
+                        title: "4.2. Lựa chọn màu nhuộm phù hợp với tông da và màu tóc tự nhiên.",
+                        content: `
+                            <p class="mb-3">Màu nhuộm phù hợp tôn da, làm khuôn mặt rạng rỡ. Lựa chọn sai có thể làm da xỉn màu.</p>
+                            <h5 class="text-md font-semibold text-teal-600 mb-1">Ảnh hưởng của tông da:</h5>
+                            <ul class="list-disc list-inside space-y-2 mb-4">
+                                <li><strong>Da ngăm/tối màu:</strong> Hợp màu trung tính, tối. Nâu hạt dẻ, nâu rêu, nâu đỏ, nâu ánh đồng, socola, quế, trà mật ong, espresso. Đỏ cherry, đỏ cam, đỏ rượu vang. Đen tự nhiên, sapphire, ánh tím, xanh đen. Màu không cần tẩy: nâu hạt dẻ, socola, mật ong, ánh đồng.</li>
+                                <li><strong>Da sáng màu:</strong> Nhiều lựa chọn hơn.</li>
+                                <li><strong>Da có sắc tố hồng (cool undertone):</strong> Tránh màu quá sáng, ánh đỏ.</li>
+                                <li><strong>Da tông ô liu (olive undertone):</strong> Hợp màu vàng, ánh vàng.</li>
+                                <li><strong>Da trung tính (neutral undertone):</strong> Hợp cả tông ấm (vàng, đồng) và lạnh (tro, khói).</li>
+                            </ul>
+                             <h5 class="text-md font-semibold text-teal-600 mb-1">Ảnh hưởng của màu tóc tự nhiên/hiện tại:</h5>
+                            <ul class="list-disc list-inside space-y-2 mb-4">
+                                <li><strong>Tự nhuộm tại nhà:</strong> Chọn màu chênh lệch tối đa 2 tông so với màu hiện tại. Thay đổi màu đột ngột (đen sang vàng sáng) khó thành công, rủi ro cao.</li>
+                                <li><strong>Tóc tối muốn màu sáng hơn:</strong> Thường cần tẩy tóc (bleaching). Nên thực hiện tại salon chuyên nghiệp.</li>
+                            </ul>
+                            <p class="mb-2"><strong>Lựa chọn an toàn khi tự nhuộm:</strong> Nâu hạt dẻ dễ lên màu, hợp nhiều tông da, ít lộ khuyết điểm.</p>
+                            <p>Màu tóc là một phần tổng thể ngoại hình. Khi tự nhuộm, cần ý thức giới hạn. Các màu sáng, phức tạp, cần tẩy tóc nên ra salon.</p>
+                        `
+                    },
+                    {
+                        id: "patchTest",
+                        title: "4.3. Kiểm tra dị ứng (Patch Test).",
+                        content: `
+                            <p class="mb-3">Cực kỳ quan trọng, không thể bỏ qua, đặc biệt với thuốc nhuộm vĩnh viễn/bán vĩnh viễn. Phát hiện sớm phản ứng dị ứng (PPD là chất phổ biến). Phản ứng có thể từ nhẹ (ngứa, đỏ) đến nặng (phồng rộp, lở loét, sốc phản vệ).</p>
+                            <h5 class="text-md font-semibold text-teal-600 mb-1">Cách thực hiện Patch Test tại nhà:</h5>
+                            <ol class="list-decimal list-inside space-y-1 mb-4">
+                                <li>Chuẩn bị ít hỗn hợp thuốc nhuộm đã pha.</li>
+                                <li>Thoa lên vùng da kín đáo, nhạy cảm (sau tai, trong cẳng tay), diện tích 1.5-2 cm².</li>
+                                <li>Để khô tự nhiên, không che đậy, không rửa.</li>
+                                <li>Theo dõi 24-48 giờ (y tế có thể 96 giờ).</li>
+                                <li>Nếu có dấu hiệu bất thường (ngứa, đỏ, sưng, mụn nước, phồng rộp, lở loét): dị ứng, tuyệt đối không dùng sản phẩm, rửa sạch vùng thử. Không phản ứng: tương đối an toàn.</li>
+                            </ol>
+                            <p class="mb-2"><strong>Đối tượng cần thực hiện:</strong> Mọi người, trước mỗi lần nhuộm, đặc biệt khi dùng sản phẩm mới hoặc da nhạy cảm, có tiền sử dị ứng. Kể cả thuốc "thảo dược" như Henna.</p>
+                            <p class="mb-2"><strong>Patch Test y tế:</strong> Do bác sĩ da liễu thực hiện, xác định chính xác dị nguyên cụ thể bằng bộ kit chuyên dụng. Chống chỉ định cho phụ nữ mang thai/cho con bú.</p>
+                            <p>Nhiều người bỏ qua bước này khi tự nhuộm. Phản ứng dị ứng không hiếm và có thể nguy hiểm. Cần phân biệt patch test tại nhà (sàng lọc cơ bản) và patch test y tế (chẩn đoán chính xác).</p>
+                        `
+                    },
+                    {
+                        id: "vatDung",
+                        title: "4.4. Các vật dụng cần thiết và chuẩn bị không gian.",
+                        content: `
+                            <p class="mb-3">Chuẩn bị đầy đủ giúp quá trình nhuộm suôn sẻ, an toàn, hiệu quả.</p>
+                            <h5 class="text-md font-semibold text-teal-600 mb-1">Vật dụng cần thiết:</h5>
+                            <ul class="list-disc list-inside space-y-1 mb-4">
+                                <li>Thuốc nhuộm (đủ lượng cho tóc dài/dày).</li>
+                                <li>Găng tay (bắt buộc).</li>
+                                <li>Áo choàng/khăn cũ (màu tối).</li>
+                                <li>Kẹp tóc (mỏ vịt).</li>
+                                <li>Bát trộn thuốc (không dùng kim loại, nên dùng nhựa/thủy tinh).</li>
+                                <li>Cọ nhuộm.</li>
+                                <li>Lược.</li>
+                                <li>Vaseline/son dưỡng/dầu dưỡng (thoa viền chân tóc, tai, gáy).</li>
+                                <li>Giấy báo/nilon (che phủ sàn).</li>
+                                <li>Khăn lau vết bẩn.</li>
+                                <li>Mũ tắm/mũ ủ tóc.</li>
+                            </ul>
+                            <h5 class="text-md font-semibold text-teal-600 mb-1">Chuẩn bị tóc:</h5>
+                            <ul class="list-disc list-inside space-y-1 mb-4">
+                                <li><strong>Thời điểm gội đầu:</strong> Trước khi nhuộm 24-48 tiếng. Lớp dầu tự nhiên giúp bám màu tốt hơn, bảo vệ da đầu.</li>
+                                <li><strong>Không dùng dầu xả:</strong> Trong lần gội cuối trước nhuộm, dầu xả có thể cản trở thuốc thấm.</li>
+                                <li><strong>Chải tóc suôn mượt:</strong> Giúp chia tóc, thoa thuốc đều.</li>
+                            </ul>
+                            <p class="mb-2"><strong>Chuẩn bị không gian:</strong> Nơi thoáng khí (phòng tắm có cửa sổ mở) để giảm hơi hóa chất.</p>
+                            <p>Chuẩn bị chu đáo đảm bảo an toàn, kết quả màu đẹp, ít hư tổn. Lời khuyên về thời điểm gội đầu và không dùng dầu xả rất quan trọng.</p>
+                        `
+                    }
+                ]
+            },
+            kyThuat: {
+                title: "Phần V: Các Kỹ Thuật Nhuộm Tóc Phổ Biến",
+                intro: "Nghệ thuật nhuộm tóc không ngừng phát triển với vô số kỹ thuật sáng tạo. Phần này sẽ giới thiệu đến bạn các kỹ thuật nhuộm tóc đang thịnh hành, từ nhuộm một màu cơ bản, tạo điểm nhấn với highlight, hiệu ứng chuyển màu tự nhiên của balayage, sự tương phản cá tính của ombre, cho đến các kiểu nhuộm độc đáo khác như hidden hay dip-dye. Mỗi kỹ thuật mang một phong cách và yêu cầu tay nghề riêng.",
+                cards: [
+                    {
+                        id: "toanBo",
+                        name: "5.1. Nhuộm toàn bộ (Một màu - All-over color / Single-process color)",
+                        details: `
+                            <p class="mb-2">Kỹ thuật cơ bản nhất, thay đổi toàn bộ màu tóc sang một màu mới đồng nhất.</p>
+                            <h5 class="text-md font-semibold text-teal-600 mt-3 mb-1">Quy trình cơ bản:</h5>
+                            <ol class="list-decimal list-inside space-y-1 mb-2">
+                                <li><strong>Chuẩn bị:</strong> Đánh giá tóc, chọn màu, oxy, patch test, dụng cụ. Tóc gội trước 1-2 ngày, không dầu xả, khô, chải suôn.</li>
+                                <li><strong>Chia tóc:</strong> Thường thành 4 phần, rồi chia lọn nhỏ (1-2cm).</li>
+                                <li><strong>Pha thuốc:</strong> Theo hướng dẫn nhà sản xuất.</li>
+                                <li><strong>Thoa thuốc:</strong>
+                                    <ul class="list-disc list-inside ml-4">
+                                        <li><em>Tóc tự nhiên chưa nhuộm (virgin hair):</em> Thoa thân và ngọn trước (cách chân 2-3cm), để 15-30 phút. Sau đó thoa chân tóc, để thêm 10-15 phút. (Do nhiệt da đầu làm chân tóc bắt màu nhanh).</li>
+                                        <li><em>Nhuộm lại chân tóc (regrowth):</em> Chỉ thoa vào chân tóc mới mọc, tránh chồng lên phần đã nhuộm. Gần cuối có thể kéo nhẹ thuốc ra để đều màu.</li>
+                                        <li>Bắt lớp tóc mỏng, quét đều cả hai mặt, massage nhẹ.</li>
+                                    </ul>
+                                </li>
+                                <li><strong>Ủ tóc:</strong> 30-60 phút tùy thuốc. Có thể dùng mũ ủ.</li>
+                                <li><strong>Kiểm tra màu:</strong> Trước khi kết thúc ủ.</li>
+                                <li><strong>Xả tóc:</strong> Có thể nhũ hóa (massage với ít nước ấm 3-5 phút). Xả kỹ đến khi nước trong. Gội và xả bằng sản phẩm cho tóc nhuộm.</li>
+                            </ol>
+                            <p>Kỹ thuật "cách chân" cho tóc virgin rất quan trọng để tránh "chân sáng hơn ngọn" (hot roots). Chia tóc và thoa đều là then chốt cho màu đồng nhất.</p>
+                        `
+                    },
+                    {
+                        id: "highlight",
+                        name: "5.2. Nhuộm Highlight (Gẩy light)",
+                        details: `
+                            <p class="mb-2">Làm sáng một số lọn tóc chọn lọc, tạo chiều sâu, sinh động, kết cấu.</p>
+                            <p class="mb-2"><strong>Mục đích:</strong> Tạo hiệu ứng tương đồng/tương phản. Chuẩn bị nền cho màu khác (xanh, hồng).</p>
+                            <h5 class="text-md font-semibold text-teal-600 mt-3 mb-1">Các bước cơ bản:</h5>
+                            <ol class="list-decimal list-inside space-y-1 mb-2">
+                                <li><strong>Chuẩn bị:</strong> Chọn màu highlight sáng hơn nền. Hỗn hợp thường là thuốc tẩy + oxy (nếu nền tối), hoặc màu sáng (nếu nền sáng).</li>
+                                <li><strong>Chia tóc và Chọn lọn:</strong>
+                                    <ul class="list-disc list-inside ml-4">
+                                        <li><em>Mũ highlight (Cap Highlighting):</em> Dùng mũ chuyên dụng, kim móc kéo lọn tóc qua lỗ. Không lấy lọn quá dày.</li>
+                                        <li><em>Giấy bạc (Foiling):</em> Phổ biến, linh hoạt, kiểm soát chính xác.
+                                            <ul class="list-disc list-inside ml-6">
+                                                <li><em>Đan light (Weaving):</em> Dùng đuôi lược đan zic-zac tách lọn nhỏ, đặt lên giấy bạc, quét thuốc, gói lại.</li>
+                                                <li><em>Thái lát (Slicing):</em> Lấy lát tóc mỏng, tạo dải màu rõ nét.</li>
+                                            </ul>
+                                        </li>
+                                        <li><em>Nhuộm tự do (Freehand Painting / Balayage).</em></li>
+                                    </ul>
+                                </li>
+                                <li><strong>Thoa thuốc:</strong> Lên lọn đã tách, từ chân/cách chân tùy ý.</li>
+                                <li><strong>Ủ tóc:</strong> Theo dõi sát, đặc biệt khi dùng thuốc tẩy.</li>
+                                <li><strong>Nhuộm màu hoàn thiện (Toner - nếu cần):</strong> Sau tẩy, tóc thường ngả vàng/cam. Toner trung hòa, tạo ánh sắc highlight chuẩn (vàng tro, bạch kim). Thoa lên tóc ẩm sau tẩy, để 5-20 phút.</li>
+                                <li><strong>Xả tóc và Chăm sóc.</strong></li>
+                            </ol>
+                            <p>Đa dạng phương pháp (mũ, foiling, vẽ tay) tạo hiệu ứng khác nhau. Để highlight nổi bật trên nền tối, thường cần tẩy tóc, tăng nguy cơ hư tổn.</p>
+                        `
+                    },
+                    {
+                        id: "balayage",
+                        name: "5.3. Nhuộm Balayage",
+                        details: `
+                            <p class="mb-2">Tiếng Pháp nghĩa là "quét" hoặc "sơn". Kỹ thuật nhuộm tự do, thợ "vẽ" thuốc (thường là tẩy/màu làm sáng) lên bề mặt lọn tóc, tạo hiệu ứng chuyển màu mềm mại, tự nhiên như "hôn bởi nắng".</p>
+                            <h5 class="text-md font-semibold text-teal-600 mt-3 mb-1">Đặc điểm nổi bật:</h5>
+                            <ul class="list-disc list-inside space-y-1 mb-2">
+                                <li>Vẻ ngoài tự nhiên, không đường ranh giới cứng.</li>
+                                <li>Bắt đầu cách xa chân tóc, đậm/sáng dần về ngọn. Khi tóc mọc không lộ chân rõ.</li>
+                                <li>Highlight theo chiều dọc.</li>
+                            </ul>
+                            <h5 class="text-md font-semibold text-teal-600 mt-3 mb-1">Quy trình cơ bản:</h5>
+                            <ol class="list-decimal list-inside space-y-1 mb-2">
+                                <li><strong>Chuẩn bị:</strong> Đánh giá tóc. Nếu yếu, cần phục hồi trước.</li>
+                                <li><strong>Tẩy tóc (nếu cần):</strong> Pha bột tẩy + oxy (ví dụ 9%, tỷ lệ 1:2). "Quét" lên bề mặt lọn tóc, tập trung nhiều ở giữa thân và ngọn. Không dùng giấy bạc (hoặc hạn chế). Xả sạch khi đạt độ sáng.</li>
+                                <li><strong>Nhuộm màu hoàn thiện (Toner):</strong> Pha toner + oxy thấp (ví dụ 3%, tỷ lệ 1:1). Thoa lên phần đã làm sáng.</li>
+                                <li><strong>Ủ tóc (toner):</strong> 30-45 phút.</li>
+                                <li><strong>Xả tóc và Chăm sóc.</strong></li>
+                            </ol>
+                            <h5 class="text-md font-semibold text-teal-600 mt-3 mb-1">Ưu điểm:</h5>
+                            <ul class="list-disc list-inside space-y-1">
+                                <li>Ít cần bảo dưỡng (Low Maintenance): Khoảng cách dặm lại màu dài (12-14 tuần+).</li>
+                                <li>Vẻ đẹp cá nhân hóa.</li>
+                            </ul>
+                            <p>Đòi hỏi tay nghề cao, cảm nhận thẩm mỹ. Khó tự làm tại nhà. Phổ biến do xu hướng "low maintenance" và vẻ "effortless chic".</p>
+                        `
+                    },
+                    {
+                        id: "ombre",
+                        name: "5.4. Nhuộm Ombre",
+                        details: `
+                            <p class="mb-2">Tiếng Pháp nghĩa là "tô bóng". Mô tả "kiểu tóc" hoặc "hiệu ứng" chuyển màu rõ rệt từ tông này sang tông khác, thường tối ở chân/thân, sáng hơn ở ngọn (hoặc ngược lại).</p>
+                            <h5 class="text-md font-semibold text-teal-600 mt-3 mb-1">Đặc điểm nổi bật:</h5>
+                            <ul class="list-disc list-inside space-y-1 mb-2">
+                                <li>Chuyển màu rõ rệt theo chiều ngang.</li>
+                                <li>Tương phản màu sắc mạnh mẽ.</li>
+                            </ul>
+                            <h5 class="text-md font-semibold text-teal-600 mt-3 mb-1">Quy trình cơ bản (thường tẩy ngọn):</h5>
+                            <ol class="list-decimal list-inside space-y-1 mb-2">
+                                <li><strong>Chuẩn bị:</strong> Xác định màu chân, ngọn. Quyết định vị trí bắt đầu chuyển màu (ngang cằm, vai...). Điểm chuyển càng thấp càng an toàn.</li>
+                                <li><strong>Tẩy tóc (cho ngọn):</strong> Pha bột tẩy + oxy (ví dụ 20Vol 1:1, hoặc 9% 1:2). Chia tóc, có thể đánh rối nhẹ khu vực chuyển tiếp. Thoa thuốc tẩy từ ngọn lên vị trí đã định, theo chiều dọc. Ủ 30-45 phút. Xả sạch.</li>
+                                <li><strong>Nhuộm màu:</strong> Sau khi tóc tẩy khô. Pha màu (ví dụ: màu tối cho chân/thân, toner cho ngọn). Thoa lên phần đã tẩy và hơi lấn lên trên điểm chuyển tiếp.</li>
+                                <li><strong>Ủ tóc (màu nhuộm).</strong></li>
+                                <li><strong>Xả tóc và Chăm sóc.</strong></li>
+                            </ol>
+                            <h5 class="text-md font-semibold text-teal-600 mt-3 mb-1">Khác biệt với Balayage:</h5>
+                            <p>Balayage là <em>kỹ thuật</em> "quét" tạo highlight dọc, tự nhiên. Ombre là <em>kiểu tóc/hiệu ứng</em> chuyển màu ngang, rõ rệt. Ombre thường cần tẩy ngọn, balayage có thể không.</p>
+                            <p>Ombre tạo tuyên bố phong cách cá tính, ấn tượng. Ranh giới với balayage có thể linh hoạt, thợ có thể dùng kỹ thuật balayage tạo ombre mềm mại hơn.</p>
+                        `
+                    },
+                    {
+                        id: "sangTaoKhac",
+                        name: "5.5. Các kiểu nhuộm sáng tạo khác (ví dụ: hidden, dip-dye)",
+                        details: `
+                            <h5 class="text-md font-semibold text-teal-600 mb-1">Nhuộm Hidden (Ẩn màu):</h5>
+                            <p class="mb-2">Nhuộm một phần tóc ẩn (lớp dưới gáy, vài lọn bên trong) bằng màu khác biệt (pastel, neon, tương phản). Màu chỉ lộ ra khi vén tóc, buộc cao, tết, hoặc tóc chuyển động. Phá cách thú vị nhưng vẫn kín đáo. Có thể thử màu trà mật ong không cần tẩy trên nền tối. Màu sáng/pastel cần tẩy.</p>
+                            
+                            <h5 class="text-md font-semibold text-teal-600 mt-3 mb-1">Nhuộm Dip-Dye (Nhuộm nhúng):</h5>
+                            <p class="mb-2">Chỉ nhuộm phần đuôi tóc, hiệu ứng như "nhúng" vào thuốc nhuộm. Ranh giới màu thường rõ ràng, nằm ngang. Màu đa dạng. Thêm cá tính mà không nhuộm toàn bộ. Dễ cắt bỏ nếu không thích/hư tổn. Màu sáng/thời trang cần tẩy đuôi tóc.</p>
+                            <p>Các kiểu này cho phép thể hiện cá tính linh hoạt. Nhuộm hidden là cách "chơi màu" thông minh. Dip-dye mang tuyên ngôn mạnh mẽ hơn. Ngành tóc luôn sáng tạo, biến tấu kỹ thuật cơ bản tạo kiểu mới lạ.</p>
+                        `
+                    }
+                ]
+            },
+            soSanh: {
+                title: "Phần VI: So Sánh và Dữ Liệu Trực Quan",
+                intro: "Để có cái nhìn rõ ràng và dễ dàng đối chiếu thông tin, phần này tổng hợp các bảng so sánh quan trọng từ báo cáo. Bạn sẽ tìm thấy bảng so sánh chi tiết về các loại thuốc nhuộm tóc, ứng dụng của các nồng độ Hydrogen Peroxide, và đặc điểm của các kỹ thuật nhuộm phổ biến. Đặc biệt, dữ liệu về Hydrogen Peroxide sẽ được trực quan hóa bằng biểu đồ để bạn dễ dàng nắm bắt sự khác biệt.",
+                sections: [
+                    {
+                        id: "bang1",
+                        title: "Bảng 1: Nồng Độ Hydrogen Peroxide và Ứng Dụng (Dữ liệu từ báo cáo)",
+                        content: `
+                            <p class="mb-4">Bảng này tóm tắt các nồng độ Hydrogen Peroxide ($H_2O_2$) phổ biến và mục đích sử dụng chính của chúng trong quá trình nhuộm tóc. Việc lựa chọn đúng nồng độ là rất quan trọng để đạt được kết quả màu mong muốn và hạn chế hư tổn cho tóc.</p>
+                            <div class="chart-container mb-8">
+                                <canvas id="peroxideChart"></canvas>
+                            </div>
+                            <p class="text-sm text-gray-600 mb-4 text-center">Biểu đồ trên trực quan hóa khả năng nâng tông và tỷ lệ đưa hạt màu vào tóc của các nồng độ Oxy khác nhau. Di chuột qua các cột để xem chi tiết.</p>
+                            <div class="table-responsive shadow-md rounded-lg overflow-hidden">
+                                <table class="min-w-full bg-white">
+                                    <thead class="bg-teal-50">
+                                        <tr>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-teal-700 uppercase tracking-wider">Nồng độ (Volume)</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-teal-700 uppercase tracking-wider">Nồng độ (%)</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-teal-700 uppercase tracking-wider">Mục đích sử dụng chính</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-teal-700 uppercase tracking-wider">Khả năng nâng tông</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-teal-700 uppercase tracking-wider">Tỷ lệ đưa hạt màu vào tóc</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-teal-700 uppercase tracking-wider">Khả năng giữ màu</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-teal-700 uppercase tracking-wider">Lưu ý đặc biệt</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-gray-200">
+                                        <tr>
+                                            <td class="px-6 py-4 whitespace-nowrap">10 Vol</td>
+                                            <td class="px-6 py-4 whitespace-nowrap">3%</td>
+                                            <td class="px-6 py-4">Hạ tông, nhuộm ngang tông, phủ bạc hiệu quả, nhuộm màu mix</td>
+                                            <td class="px-6 py-4">Không nâng hoặc nâng rất nhẹ</td>
+                                            <td class="px-6 py-4">100%</td>
+                                            <td class="px-6 py-4">Rất tốt</td>
+                                            <td class="px-6 py-4">Lựa chọn tối ưu cho phủ bạc, giữ màu bền nhất.</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="px-6 py-4 whitespace-nowrap">20 Vol</td>
+                                            <td class="px-6 py-4 whitespace-nowrap">6%</td>
+                                            <td class="px-6 py-4">Hạ tông, nhuộm ngang tông, nâng 1 tông, nhuộm màu mix</td>
+                                            <td class="px-6 py-4">Nâng 1-2 tông</td>
+                                            <td class="px-6 py-4">75%</td>
+                                            <td class="px-6 py-4">Tốt</td>
+                                            <td class="px-6 py-4">Phổ biến cho nhiều kỹ thuật nhuộm, cân bằng giữa nâng tông và giữ màu.</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="px-6 py-4 whitespace-nowrap">30 Vol</td>
+                                            <td class="px-6 py-4 whitespace-nowrap">9%</td>
+                                            <td class="px-6 py-4">Nâng màu từ 1-2 tông, hoặc 2-3 tông</td>
+                                            <td class="px-6 py-4">Nâng 2-3 tông</td>
+                                            <td class="px-6 py-4">50%</td>
+                                            <td class="px-6 py-4">Trung bình</td>
+                                            <td class="px-6 py-4">Dùng cho các màu sáng hơn, bắt đầu có sự đánh đổi về độ bền màu.</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="px-6 py-4 whitespace-nowrap">40 Vol</td>
+                                            <td class="px-6 py-4 whitespace-nowrap">12%</td>
+                                            <td class="px-6 py-4">Nâng màu từ 3-4 tông, hoặc 3-4 tông</td>
+                                            <td class="px-6 py-4">Nâng 3-4 tông</td>
+                                            <td class="px-6 py-4">25%</td>
+                                            <td class="px-6 py-4">Kém, mau bay</td>
+                                            <td class="px-6 py-4">Dùng cho các màu rất sáng, tóc tẩy. Tỷ lệ giữ màu thấp nhất, tóc dễ hư tổn hơn.</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        `
+                    },
+                    {
+                        id: "bang2",
+                        title: "Bảng 2: So Sánh Các Loại Thuốc Nhuộm Tóc Chính (Dữ liệu từ báo cáo)",
+                         content: `
+                            <p class="mb-4">Bảng này cung cấp một cái nhìn tổng quan và so sánh các đặc điểm chính của các loại thuốc nhuộm tóc phổ biến, giúp bạn dễ dàng nhận diện sự khác biệt và lựa chọn sản phẩm phù hợp với nhu cầu của mình.</p>
+                            <div class="table-responsive shadow-md rounded-lg overflow-hidden">
+                                <table class="min-w-full bg-white">
+                                    <thead class="bg-teal-50">
+                                        <tr>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-teal-700 uppercase tracking-wider">Tiêu chí so sánh</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-teal-700 uppercase tracking-wider">Tạm thời</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-teal-700 uppercase tracking-wider">Bán vĩnh viễn (Semi)</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-teal-700 uppercase tracking-wider">Lưng chừng (Demi) / Hấp màu</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-teal-700 uppercase tracking-wider">Vĩnh viễn (Oxy hóa)</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-teal-700 uppercase tracking-wider">Thảo dược (Henna/Indigo)</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-teal-700 uppercase tracking-wider">Kim loại</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-gray-200">
+                                        <tr>
+                                            <td class="px-6 py-4 font-semibold">Cơ chế hoạt động</td>
+                                            <td class="px-6 py-4">Hạt màu lớn bám bề mặt</td>
+                                            <td class="px-6 py-4">Hạt màu nhỏ thấm vào vỏ, không cần oxy hóa mạnh</td>
+                                            <td class="px-6 py-4">Hạt màu nhỏ thấm vào vỏ, cần ít oxy hóa</td>
+                                            <td class="px-6 py-4">Hạt màu siêu nhỏ thấm sâu, oxy hóa tạo màu lớn bên trong</td>
+                                            <td class="px-6 py-4">Hạt màu tự nhiên bọc ngoài/thấm nhẹ</td>
+                                            <td class="px-6 py-4">Ion kim loại phản ứng keratin tạo màng màu</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="px-6 py-4 font-semibold">Độ bền màu</td>
+                                            <td class="px-6 py-4">1-3 lần gội</td>
+                                            <td class="px-6 py-4">~8 tuần (dầu gội), phai dần</td>
+                                            <td class="px-6 py-4">3-4 tuần / 10-15 lần gội</td>
+                                            <td class="px-6 py-4">Vĩnh viễn (mọc chân mới)</td>
+                                            <td class="px-6 py-4">1.5-4 tháng, tùy loại</td>
+                                            <td class="px-6 py-4">Tăng dần, khá bền, khó loại bỏ</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="px-6 py-4 font-semibold">Cần Peroxide/Ammoniac?</td>
+                                            <td class="px-6 py-4">Không</td>
+                                            <td class="px-6 py-4">Thường không, hoặc rất thấp</td>
+                                            <td class="px-6 py-4">Có (thấp 1.5-3%) / không (tóc tẩy)</td>
+                                            <td class="px-6 py-4">Có (Peroxide & chất kiềm)</td>
+                                            <td class="px-6 py-4">Không</td>
+                                            <td class="px-6 py-4">Không</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="px-6 py-4 font-semibold">Khả năng làm sáng tóc tự nhiên</td>
+                                            <td class="px-6 py-4">Không</td>
+                                            <td class="px-6 py-4">Hạn chế</td>
+                                            <td class="px-6 py-4">Hạn chế, nâng nhẹ với oxy</td>
+                                            <td class="px-6 py-4">Có, tùy nồng độ oxy</td>
+                                            <td class="px-6 py-4">Không</td>
+                                            <td class="px-6 py-4">Không</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="px-6 py-4 font-semibold">Khả năng phủ bạc</td>
+                                            <td class="px-6 py-4">Kém</td>
+                                            <td class="px-6 py-4">Trung bình</td>
+                                            <td class="px-6 py-4">Tốt (~25%+)</td>
+                                            <td class="px-6 py-4">Rất tốt</td>
+                                            <td class="px-6 py-4">Tốt (Henna/Indigo)</td>
+                                            <td class="px-6 py-4">Có, màu lên từ từ</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="px-6 py-4 font-semibold">Mức độ hư tổn tiềm ẩn</td>
+                                            <td class="px-6 py-4">Rất thấp, có thể kích ứng da</td>
+                                            <td class="px-6 py-4">Thấp đến trung bình</td>
+                                            <td class="px-6 py-4">Thấp đến trung bình</td>
+                                            <td class="px-6 py-4">Cao nhất</td>
+                                            <td class="px-6 py-4">Rất thấp (nguyên chất), có thể khô tóc</td>
+                                            <td class="px-6 py-4">Cao (tóc giòn, khô, cản trở hóa chất)</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="px-6 py-4 font-semibold">Ưu điểm chính</td>
+                                            <td class="px-6 py-4">Linh hoạt, dễ đổi, ít rủi ro</td>
+                                            <td class="px-6 py-4">Ít hư tổn, một số không cần tẩy</td>
+                                            <td class="px-6 py-4">Tăng bóng, làm mới màu, phủ bạc nhẹ</td>
+                                            <td class="px-6 py-4">Thay đổi màu mạnh, bền, phủ bạc tốt</td>
+                                            <td class="px-6 py-4">An toàn (thường), chăm sóc tóc, mùi dễ chịu</td>
+                                            <td class="px-6 py-4">Dễ tự dùng, màu lên từ từ</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="px-6 py-4 font-semibold">Nhược điểm chính</td>
+                                            <td class="px-6 py-4">Mau trôi, có thể kích ứng</td>
+                                            <td class="px-6 py-4">Màu phai dần, có thể dị ứng</td>
+                                            <td class="px-6 py-4">Độ bền không cao</td>
+                                            <td class="px-6 py-4">Gây hư tổn, nguy cơ dị ứng cao</td>
+                                            <td class="px-6 py-4">Hạn chế màu sáng, ủ lâu, khó đổi màu (đen)</td>
+                                            <td class="px-6 py-4">Màu không tự nhiên, hại tóc, cản trở dịch vụ khác</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="px-6 py-4 font-semibold">Đối tượng phù hợp</td>
+                                            <td class="px-6 py-4">Thử nghiệm màu, dịp đặc biệt</td>
+                                            <td class="px-6 py-4">Thử màu lâu hơn tạm thời, ít hư tổn</td>
+                                            <td class="px-6 py-4">Tăng bóng, che bạc nhẹ, tóc đã xử lý</td>
+                                            <td class="px-6 py-4">Thay đổi màu rõ rệt, phủ bạc nhiều, cần bền</td>
+                                            <td class="px-6 py-4">Ưa tự nhiên, tránh hóa chất, tóc bạc</td>
+                                            <td class="px-6 py-4">Tự dùng tại nhà (không khuyến khích)</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        `
+                    },
+                    {
+                        id: "bang3",
+                        title: "Bảng 3: Các Kỹ Thuật Nhuộm Tóc Phổ Biến – Đặc Điểm và So Sánh (Dữ liệu từ báo cáo)",
+                        content: `
+                            <p class="mb-4">Bảng này so sánh các kỹ thuật nhuộm tóc phổ biến, giúp bạn hiểu rõ hơn về hiệu ứng, mức độ tự nhiên, yêu cầu kỹ thuật và khả năng bảo dưỡng của từng loại, từ đó chọn được kiểu nhuộm phù hợp nhất với phong cách và lối sống của mình.</p>
+                           <div class="table-responsive shadow-md rounded-lg overflow-hidden">
+                                <table class="min-w-full bg-white">
+                                    <thead class="bg-teal-50">
+                                        <tr>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-teal-700 uppercase tracking-wider">Kỹ thuật</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-teal-700 uppercase tracking-wider">Mô tả ngắn gọn</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-teal-700 uppercase tracking-wider">Hiệu ứng chính</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-teal-700 uppercase tracking-wider">Mức độ tự nhiên</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-teal-700 uppercase tracking-wider">Yêu cầu tẩy tóc (Thường/Ít/Không)</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-teal-700 uppercase tracking-wider">Độ khó tự thực hiện</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-teal-700 uppercase tracking-wider">Mức độ bảo dưỡng</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-teal-700 uppercase tracking-wider">Phù hợp với</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-gray-200">
+                                        <tr>
+                                            <td class="px-6 py-4 font-semibold">Nhuộm toàn bộ</td>
+                                            <td class="px-6 py-4">Nhuộm một màu đồng nhất từ chân đến ngọn</td>
+                                            <td class="px-6 py-4">Màu tóc đồng nhất, thay đổi hoàn toàn màu cũ</td>
+                                            <td class="px-6 py-4">Tùy màu chọn</td>
+                                            <td class="px-6 py-4">Tùy màu đích (sáng hơn cần tẩy)</td>
+                                            <td class="px-6 py-4">Trung bình</td>
+                                            <td class="px-6 py-4">Cao (dặm chân tóc thường xuyên)</td>
+                                            <td class="px-6 py-4">Muốn thay đổi màu hoàn toàn, phủ bạc</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="px-6 py-4 font-semibold">Highlight</td>
+                                            <td class="px-6 py-4">Làm sáng một số lọn tóc chọn lọc</td>
+                                            <td class="px-6 py-4">Tăng chiều sâu, sinh động, kết cấu</td>
+                                            <td class="px-6 py-4">Từ tinh tế đến tương phản mạnh</td>
+                                            <td class="px-6 py-4">Thường (để nổi bật trên nền tối)</td>
+                                            <td class="px-6 py-4">Khó</td>
+                                            <td class="px-6 py-4">Trung bình đến Cao</td>
+                                            <td class="px-6 py-4">Tạo điểm nhấn, làm sáng tóc một cách có chọn lọc</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="px-6 py-4 font-semibold">Balayage</td>
+                                            <td class="px-6 py-4">"Quét" hoặc "vẽ" màu tự do lên bề mặt tóc</td>
+                                            <td class="px-6 py-4">Chuyển màu mềm mại, tự nhiên như "nắng hôn"</td>
+                                            <td class="px-6 py-4">Rất cao</td>
+                                            <td class="px-6 py-4">Thường (để tạo độ sáng)</td>
+                                            <td class="px-6 py-4">Rất khó</td>
+                                            <td class="px-6 py-4">Thấp (ít lộ chân tóc)</td>
+                                            <td class="px-6 py-4">Ưa vẻ tự nhiên, ít bảo dưỡng, muốn hiệu ứng "sun-kissed"</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="px-6 py-4 font-semibold">Ombre</td>
+                                            <td class="px-6 py-4">Chuyển màu rõ rệt từ tối (chân) sang sáng (ngọn)</td>
+                                            <td class="px-6 py-4">Tương phản màu sắc mạnh mẽ theo chiều ngang</td>
+                                            <td class="px-6 py-4">Trung bình (có đường chuyển màu)</td>
+                                            <td class="px-6 py-4">Thường (cho phần ngọn)</td>
+                                            <td class="px-6 py-4">Khó</td>
+                                            <td class="px-6 py-4">Trung bình</td>
+                                            <td class="px-6 py-4">Muốn vẻ ngoài cá tính, nổi bật, tương phản rõ</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="px-6 py-4 font-semibold">Hidden</td>
+                                            <td class="px-6 py-4">Nhuộm màu nổi bật ở lớp tóc ẩn bên trong</td>
+                                            <td class="px-6 py-4">Màu sắc bất ngờ, chỉ lộ khi vén tóc</td>
+                                            <td class="px-6 py-4">Tùy cách thể hiện (ẩn = tự nhiên, lộ = nổi bật)</td>
+                                            <td class="px-6 py-4">Ít (nếu màu tối) / Thường (nếu màu sáng/pastel)</td>
+                                            <td class="px-6 py-4">Trung bình đến Khó</td>
+                                            <td class="px-6 py-4">Thấp đến Trung bình</td>
+                                            <td class="px-6 py-4">Muốn thử màu táo bạo nhưng vẫn kín đáo khi cần</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="px-6 py-4 font-semibold">Dip-dye</td>
+                                            <td class="px-6 py-4">Chỉ nhuộm phần đuôi tóc, ranh giới rõ ràng</td>
+                                            <td class="px-6 py-4">Hiệu ứng "nhúng" màu ở đuôi tóc</td>
+                                            <td class="px-6 py-4">Ít (ranh giới rõ)</td>
+                                            <td class="px-6 py-4">Thường (cho màu sáng/thời trang)</td>
+                                            <td class="px-6 py-4">Trung bình</td>
+                                            <td class="px-6 py-4">Thấp (dễ cắt bỏ)</td>
+                                            <td class="px-6 py-4">Thêm màu sắc cá tính ở đuôi, dễ thay đổi</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        `
+                    }
+                ]
+            }
+        };
+
+        const appContent = document.getElementById('appContent');
+        const mainNav = document.getElementById('mainNav');
+        let peroxideChartInstance = null;
+
+        function renderSection(sectionId) {
+            const sectionData = appData[sectionId];
+            if (!sectionData) {
+                appContent.innerHTML = '<p>Nội dung không tìm thấy.</p>';
+                return;
+            }
+
+            let html = `<div class="bg-white p-6 rounded-lg shadow-lg">`;
+            html += `<h2 class="text-3xl font-bold text-teal-700 mb-6 border-b-2 border-teal-500 pb-2">${sectionData.title}</h2>`;
+            
+            if (sectionData.intro) {
+                html += `<p class="text-lg text-stone-700 mb-8 leading-relaxed">${sectionData.intro}</p>`;
+            }
+
+            if (sectionData.sections) {
+                sectionData.sections.forEach(subSection => {
+                    html += `<div id="${subSection.id}" class="mb-8 p-4 border border-stone-200 rounded-md bg-stone-50 shadow-sm">`;
+                    html += `<h3 class="text-2xl font-semibold text-teal-600 mb-4">${subSection.title}</h3>`;
+                    html += `<div class="prose prose-stone max-w-none text-stone-700 leading-relaxed">${subSection.content}</div>`;
+                    html += `</div>`;
+                });
+            }
+
+            if (sectionData.cards) {
+                html += `<div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">`;
+                sectionData.cards.forEach(card => {
+                    html += `
+                        <div class="card rounded-lg p-6 cursor-pointer" onclick="toggleCardDetails(this)">
+                            <h3 class="text-xl font-semibold text-teal-700 mb-3">${card.name}</h3>
+                            <div class="card-details hidden text-sm text-stone-600 space-y-2">${card.details}</div>
+                            <p class="text-teal-500 text-sm mt-3 font-medium">Nhấn để xem chi tiết</p>
+                        </div>
+                    `;
+                });
+                html += `</div>`;
+            }
+            html += `</div>`;
+            appContent.innerHTML = html;
+
+            if (sectionId === 'soSanh' && document.getElementById('peroxideChart')) {
+                renderPeroxideChart();
+            }
+        }
+        
+        function toggleCardDetails(cardElement) {
+            const details = cardElement.querySelector('.card-details');
+            const promptText = cardElement.querySelector('p.text-teal-500');
+            details.classList.toggle('hidden');
+            if (details.classList.contains('hidden')) {
+                promptText.textContent = 'Nhấn để xem chi tiết';
+            } else {
+                promptText.textContent = 'Nhấn để thu gọn';
+            }
+        }
+
+        function renderPeroxideChart() {
+            const ctx = document.getElementById('peroxideChart').getContext('2d');
+            if (peroxideChartInstance) {
+                peroxideChartInstance.destroy();
+            }
+            const data = {
+                labels: ["10 Vol (3%)", "20 Vol (6%)", "30 Vol (9%)", "40 Vol (12%)"],
+                datasets: [
+                    {
+                        label: 'Khả năng nâng tông (số tông)',
+                        data: [0.25, 1.5, 2.5, 3.5], 
+                        backgroundColor: 'rgba(54, 162, 235, 0.6)', // Blue
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 1,
+                        yAxisID: 'yTone',
+                    },
+                    {
+                        label: 'Tỷ lệ đưa hạt màu vào tóc (%)',
+                        data: [100, 75, 50, 25],
+                        backgroundColor: 'rgba(255, 159, 64, 0.6)', // Orange
+                        borderColor: 'rgba(255, 159, 64, 1)',
+                        borderWidth: 1,
+                        yAxisID: 'yPercent',
+                    }
+                ]
+            };
+            const config = {
+                type: 'bar',
+                data: data,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false,
+                    },
+                    scales: {
+                        x: {
+                            stacked: false,
+                            grid: { display: false }
+                        },
+                        yTone: {
+                            type: 'linear',
+                            display: true,
+                            position: 'left',
+                            title: {
+                                display: true,
+                                text: 'Số Tông Nâng Được'
+                            },
+                            beginAtZero: true,
+                            max: 4 
+                        },
+                        yPercent: {
+                            type: 'linear',
+                            display: true,
+                            position: 'right',
+                            title: {
+                                display: true,
+                                text: 'Tỷ Lệ Hạt Màu (%)'
+                            },
+                            min: 0,
+                            max: 100,
+                            grid: {
+                                drawOnChartArea: false, 
+                            },
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed.y !== null) {
+                                        label += context.parsed.y;
+                                        if (context.datasetIndex === 0) label += ' tông';
+                                        if (context.datasetIndex === 1) label += '%';
+                                    }
+                                    const nồngĐộ = context.label;
+                                    let khảNăngGiữMàu = '';
+                                    if (nồngĐộ === "10 Vol (3%)") khảNăngGiữMàu = "Giữ màu: Rất tốt";
+                                    else if (nồngĐộ === "20 Vol (6%)") khảNăngGiữMàu = "Giữ màu: Tốt";
+                                    else if (nồngĐộ === "30 Vol (9%)") khảNăngGiữMàu = "Giữ màu: Trung bình";
+                                    else if (nồngĐộ === "40 Vol (12%)") khảNăngGiữMàu = "Giữ màu: Kém, mau bay";
+                                    
+                                    return [label, khảNăngGiữMàu];
+                                }
+                            }
+                        },
+                        legend: {
+                            position: 'top',
+                        },
+                        title: {
+                            display: true,
+                            text: 'So Sánh Đặc Tính Các Nồng Độ Hydrogen Peroxide',
+                            font: { size: 18 }
+                        }
+                    }
+                }
+            };
+            peroxideChartInstance = new Chart(ctx, config);
+        }
+
+        mainNav.addEventListener('click', (event) => {
+            if (event.target.tagName === 'BUTTON') {
+                const sectionId = event.target.dataset.section;
+                renderSection(sectionId);
+                
+                document.querySelectorAll('#mainNav button').forEach(btn => btn.classList.remove('active'));
+                event.target.classList.add('active');
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            renderSection('tongQuan');
+        });
+    </script>
+</body>
+</html>
